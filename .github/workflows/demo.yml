@@ -18,6 +18,10 @@ jobs:
   build:
     needs: test
     runs-on: ubuntu-latest
+    outputs:
+      script-name: ${{steps.publish-js-name.outputs.built-file-name}}
+      name: ${{steps.publish-js-name.outputs.name}}
+      age: ${{steps.publish-js-name.outputs.age}}
     steps:
       - name: Get code
         uses: actions/checkout@v3
@@ -25,6 +29,12 @@ jobs:
         run: npm ci
       - name: Build website
         run: npm run build
+      - name: Publish JS name
+        id: publish-js-name
+        run: |
+          find dist/assets/*.js -type f -execdir echo 'built-file-name={}' >> $GITHUB_OUTPUT ';'
+          echo "name=Olzhas" >> $GITHUB_OUTPUT
+          echo "age=33" >> $GITHUB_OUTPUT
       - name: Upload artifact
         uses: actions/upload-artifact@v6
         with:
@@ -45,5 +55,9 @@ jobs:
           name: Dist Files
       - name: Output contents
         run: ls
+      - name: Publish Info from BUILD Step
+        run: |
+          echo "my name is ${{needs.build.outputs.name}}"
+          echo "my age is ${{needs.build.outputs.age}}"
       - name: Deploy
         run: echo "Deploying..."
